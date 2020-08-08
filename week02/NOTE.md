@@ -1,7 +1,7 @@
 学习笔记
 这一周学习了浏览器原理的部分内容，一下是我对学习内容的一些总结
 
-##浏览器工作流程
+## 浏览器工作流程
 1. 浏览器首先使用HTTP协议或者HTTPS协议，向服务端发起请求
 2. 浏览器对所发送的请求进行DNS解析
 3. 把请求回来的HTML代码进行解析，构建成DOM树
@@ -10,11 +10,11 @@
 6. 一个可选的步骤是对位图进行合成，这会极大提升后续的绘制速度
 7. 合成之后，绘制到页面上
 
-##HTTP协议
-###HTTP协议的概念
+## HTTP协议
+### HTTP协议的概念
 Http协议是基于TCP协议出现的，在TCP协议的基础上，规定了Request-Responese的模式，这个模式规定了通讯必定是由浏览器端发起的。HTTP是纯文本协议，它规定了使用TCP协议来传输文本格式的一个应用层协议。
 
-###HTTP协议格式
+### HTTP协议格式
 我们在发送一个http请求的时候，会有一个固定的http文本协议的格式如下2图
 1. 在请求部分，第一行被称作request line，它分为三部分，HTTP Method，请求路径，请求的协议和版本。紧跟在后面的是请求头，由若干行已k-v形式组成。在头之后以空行为分隔，是请求体，请求体可能包含表单数据和文件。
 ```
@@ -42,7 +42,7 @@ Strict-Transport-Security: max-age=15768000
 可大概讲HTTP协议按一下划分：
 ![HTTP协议](https://raw.githubusercontent.com/YingJian-hu/githubImg/master/TrainingGampT/week02/http.jpg)
 
-###HTTP Status code AND Status text
+### HTTP Status code AND Status text
 + 1xx：临时回应，表示客户端请继续
 + 2xx：请求成功
 + 3xx：表示请求的目标有变化，希望客户端进一步处理
@@ -55,7 +55,7 @@ Strict-Transport-Security: max-age=15768000
     + 500：服务端错误
     + 503：服务端暂时性错误，一会再试
 
-###HTTP头
+### HTTP头
 + Request Header：
     + Accept：浏览器端接收的格式
     + Accept-Encoding：浏览器端接收的编码方式
@@ -81,13 +81,13 @@ Strict-Transport-Security: max-age=15768000
     + Set-Cookie：设置cookie
     + Via：服务端的请求链路，对一些调试场景至关重要的一个头
 
-###HTTPS
+### HTTPS
 HTTPS 是使用加密通道来传输 HTTP 的内容。但是 HTTPS 首先与服务端建立一条 TLS 加密通道。TLS 构建于 TCP 协议之上，它实际上是对传输的内容做一次加密，所以从传输内容上看，HTTPS 跟 HTTP 没有任何区别。HTTPS可以确定请求的目标服务身份，保证传输的数据不会被网络中间节点窃听或串改。
 
-###HTTP2
+### HTTP2
 相对HTTP1.1最大的改进有两点：一是支持服务端推送，二是支持TCP连接复用
 
-##有限状态机
+## 有限状态机
 + 每个状态都是一个机器
     + 在每一个机器里，我们可以做计算、存储、输出......
     + 所有的这些机器接受的输入是一致的
