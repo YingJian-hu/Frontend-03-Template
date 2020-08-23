@@ -1,0 +1,5 @@
+# files
+.git
+/.vscode
+# folders
+node_modules/
