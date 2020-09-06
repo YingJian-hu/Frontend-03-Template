@@ -1,0 +1,26 @@
+<style>
+.oDiv {
+    width: 100px;
+    height: 100px;;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: aqua;
+}
+.oBtn {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+</style>
+<div class="oDiv"></div>
+<div class="oBtn">
+    <button onclick="cli()">click</button>
+</div>
+<script>
+    const oDiv = document.getElementsByClassName('oDiv')[0];
+    const cli = () =>{
+        oDiv.style.left = 300;
+        oDiv.style.transition = 'left ease-in-out 1s'
+    }
+</script>

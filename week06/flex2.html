@@ -1,0 +1,30 @@
+<!-- 两列等高，思路：思路是创建一个只有一行的 flexbox，然后用 stretch 属性让每个元素高度都等于行高 -->
+<style>
+.parent {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: stretch;
+    background: lightgreen;
+}
+.child {
+    width: 100px;
+    background: aqua;
+    outline: solid 1px;
+}
+</style>
+
+
+<div class="parent">
+    <div class="child" style="height:300px;">
+    </div>
+    <div class="child">
+    </div>
+</div>
+<br />
+<div class="parent">
+    <div class="child">
+    </div>
+    <div class="child" style="height:300px;">
+    </div>
+</div>
