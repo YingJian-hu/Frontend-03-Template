@@ -1,0 +1,136 @@
+<!-- GoBang -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .cell {
+            width: 30px;
+            height: 30px;
+            display: inline-block;
+            border: solid 1px #000;
+            vertical-align: middle;
+            line-height: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+</body>
+<script>
+    const THRESHOLD = 15;
+    const pattern = new Array(THRESHOLD * THRESHOLD);
+
+    for(let i = 0; i < THRESHOLD * THRESHOLD; i++) {
+        pattern[i] = 0;
+    }
+    
+    let flag = 1;
+
+    //  渲染函数
+    function show() {
+        const board = document.getElementById('board');
+
+        board.innerHTML = '';
+
+        for(let i = 0; i < THRESHOLD; i++) {
+            for(let j = 0; j < THRESHOLD; j++) {
+                const cell = document.createElement('div')
+                cell.classList.add('cell');
+                cell.innerText = 
+                    pattern[i * THRESHOLD + j] === 2 ? '❌' : 
+                    pattern[i * THRESHOLD + j] === 1 ? '⭕️' : '';
+                cell.addEventListener('click', () => useMove(i, j));
+                board.appendChild(cell);
+            }
+            board.appendChild(document.createElement('br'));
+        }
+    }
+
+    function useMove(x, y) {
+        if(pattern[x * THRESHOLD + y] === 0) {
+            pattern[x * THRESHOLD + y] = flag;
+            if(check(pattern, flag, x, y)) {
+                alert(flag === 2 ? '❌获得胜利' : '⭕️获得胜利');
+            }
+            flag = 3 - flag;
+            show();
+        }
+    }
+
+    //  将当前点击位置传入，已当前点击位置为相对位置进行校验
+    function check(pattern, flag, x, y) {
+        //  横
+        {
+            let winState = 0;
+            for(let j = 0; j < 15; j++) {
+                if(pattern[x * THRESHOLD + j] !== flag)
+                    winState = 0;
+                else 
+                    winState += 1;
+                
+                if(winState === 5) 
+                    return true;
+            }
+        }
+
+        //  竖
+        {
+            let winState = 0;
+            for(let i = 0; i < 15; i++) {
+                if(pattern[i * THRESHOLD + y] !== flag) 
+                    winState = 0;
+                else 
+                    winState += 1;
+
+                if(winState === 5)
+                    return true;
+            }
+        }
+
+        //  左上到右下
+        {
+            let winState = 0;
+            for(let i = 0; i < 15; i++) {
+                for(let j = 0; j < 15; j++) {
+                    if(i - j === x - y) {
+                        if(pattern[i * THRESHOLD + j] !== flag)
+                            winState = 0;
+                        else 
+                            winState += 1;
+                    }
+                    if(winState === 5)
+                        return true; 
+                }
+            }
+        }
+        
+
+        //  右上到左下
+        {
+            let winState = 0;
+            for(let i = 0; i < 15; i++) {
+                for(let j = 0; j < 15; j++) {
+                    if(i + j === x + y) {
+                        if(pattern[i * THRESHOLD + j] !== flag)
+                            winState = 0;
+                        else 
+                            winState += 1;
+                    }
+                    if(winState === 5)
+                        return true; 
+                }
+            }
+        }
+        
+    }
+
+    show();
+    
+</script>
+</html>
