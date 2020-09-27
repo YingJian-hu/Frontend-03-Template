@@ -1,0 +1,26 @@
+<style>
+    .cell {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        line-height: 7px;
+        background-color: gray;
+        border-bottom: 1px solid white;
+        border-right: 1px solid white;
+        vertical-align: top;
+    }
+    #container {
+        width: 701px;
+    }
+</style>
+<body>
+    <div id="container"></div>    
+    <button id="oBtn">save</button>
+</body>
+<script src="./js/BinaryHeap.js"></script>
+<script src="./js/MapUi.js"></script>
+<script>
+    const ui = new MapUi('#container');
+    const oBtn = document.getElementById('oBtn');
+    oBtn.addEventListener('click', () => ui.save());
+</script>
