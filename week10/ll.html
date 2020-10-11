@@ -1,0 +1,174 @@
+<script>
+//  圆括号表示捕获，除了这个正则表达式整体表示的字符串，圆括号里的内容也会直接匹配出来，专利用于词法分析
+const regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+const dictionary = ["Number", "whitespace", "LineTerminator", "*", "/", "+", "-"]
+
+function* tokenize(source) {
+    let result = null;
+    let lastIndex = 0;
+    while(true) {
+        lastIndex = regexp.lastIndex;
+        result = regexp.exec(source);
+
+        if(!result) break;
+
+        //  用新的lastIndex跟上次的lastIndex的差值跟匹配的长度做比较，如果大于匹配的长度，则证明有我们不认识的字符，如“s1024” => 5-0 > 4
+        if(regexp.lastIndex - lastIndex > result[0].length) break;
+
+        let token = {
+            type: null,
+            value: null
+        }
+
+        for(let i = 1; i < dictionary.length; i++) {
+            if(result[i]) {
+                token.type = dictionary[i - 1];
+            }
+            token.value = result[0];
+        }
+
+        yield token;
+    }
+    yield {
+        type: 'EOF'
+    }
+}
+
+let source = [];
+
+for (const token of tokenize("10 + 5 * 3")) {
+    if(token.type !== 'whitespace' && token.type !== 'LineTerminator')
+        source.push(token);
+}
+
+/*
+<Expression>::=
+    <AdditiveExpression><EOF>
+*/
+function Expression(source) {
+    if(source[0].type === 'AdditiveExpression' && source[1] && source[1].type === 'EOF') {
+        let node = {
+            type: 'EOF',
+            children: [source.shift(), source.shift()]
+        }
+        source.unshift(node);
+        return node;
+    }
+    AdditiveExpression(source);
+    return Expression(source);
+}
+
+/*
+<AdditiveExpression>::=
+    <Number>
+    |<MultiplicativeExpression><*><Number>
+    |<MultiplicativeExpression></><Number>
+    |<AdditiveExpression><+><MultiplicativeExpression>
+    |<AdditiveExpression><-><MultiplicativeExpression>
+*/
+function AdditiveExpression(source) {
+    if(source[0].type === 'MultiplicativeExpression') {
+        const node = {
+            type: 'AdditiveExpression',
+            children: [source[0]]
+        }
+        source[0] = node;
+        return AdditiveExpression(source);
+    }
+    if(source[0].type === 'AdditiveExpression' && source[1] && source[1].type === '+') {
+        const node = {
+            type: 'AdditiveExpression',
+            operator: '+',
+            children: []
+        }
+
+        node.children.push(source.shift());
+        node.children.push(source.shift());
+
+        //  Number需要先进行MultiplicativeExpression产生，AdditiveExpression才能够处理
+        MultiplicativeExpression(source);
+        node.children.push(source.shift());
+        source.unshift(node);
+
+        return AdditiveExpression(source)
+    }
+    if(source[0].type === 'AdditiveExpression' && source[1] && source[1].type === '-') {
+        const node = {
+            type: 'AdditiveExpression',
+            operator: '-',
+            children: []
+        }
+
+        node.children.push(source.shift());
+        node.children.push(source.shift());
+        MultiplicativeExpression(source);
+        node.children.push(source.shift());
+        source.unshift(node);
+
+        return AdditiveExpression(source)
+    }
+    if(source[0].type === 'AdditiveExpression') {
+        return source[0];
+    }
+
+    //  Number需要用MultiplicativeExpression进行产生
+    MultiplicativeExpression(source);
+    return AdditiveExpression(source);
+}
+
+
+/*
+<MultiplicativeExpression>::=
+    <Number>
+    |<MultiplicativeExpression><*><Number>
+    |<MultiplicativeExpression><*><Number>
+*/
+function MultiplicativeExpression(source) {
+    if(source[0].type === 'Number') {
+        const node = {
+            type: 'MultiplicativeExpression',
+            children: [source[0]]
+        }
+        source[0] = node;
+        return MultiplicativeExpression(source);
+    }
+
+    if(source[0].type === 'MultiplicativeExpression' && source[1] && source[1].type === '*') {
+        const node = {
+            type: 'MultiplicativeExpression',
+            operator: '*',
+            children: []
+        }
+
+        //  source[0]已经作为了一个MultiplicativeExpression，需要去3个形成一个新的MultiplicativeExpression
+        node.children.push(source.shift());
+        node.children.push(source.shift());
+        node.children.push(source.shift());
+        source.unshift(node);
+        
+        return MultiplicativeExpression(source);
+    }
+
+    if(source[0].type === 'MultiplicativeExpression' && source[1] && source[1].type === '/') {
+        const node = {
+            type: 'MultiplicativeExpression',
+            operator: '/',
+            children: []
+        }
+
+        node.children.push(source.shift());
+        node.children.push(source.shift());
+        node.children.push(source.shift());
+        source.unshift(node);
+        
+        return MultiplicativeExpression(source);
+    }
+
+    if(source[0].type === 'MultiplicativeExpression') {
+        return source[0]
+    }
+}
+
+console.log(Expression(source))
+</script>
