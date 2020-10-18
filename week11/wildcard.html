@@ -1,0 +1,71 @@
+<script>
+    function find(source, pattern) {
+        let startCount = 0;
+        for(let i = 0; i < pattern.length; i++) {
+            if(pattern[i] === "*") {
+                startCount ++;
+            }
+        }
+
+        //  边缘case，没有*的情况
+        if(startCount === 0) {
+            for(let i = 0; i < pattern.length; i++) {
+                if(pattern[i] !== source[i] && pattern[i] !== "?") {
+                    return false;
+                }
+            }
+            return;
+        }
+
+        //  代表patternt的位置
+        let i = 0;
+
+        //  代表source的位置
+        let lastIndex = 0;
+
+        //  将第一个*之前的内容匹配完
+        for(i = 0; pattern[i] !== "*"; i++) {
+            if(pattern[i] !== source[i] && pattern[i] !== "?") {
+                return false;
+            }
+        }
+
+        lastIndex = i;
+
+        //  循环最后一个 * 之前的每一个 *
+        //  最后面的一个 * 尽可能多的去匹配，前面的 * 尽可能少的去匹配
+        //  除去第一个 * 和最后一个 * 之外，中间的 * 均可看错一个 * 加上一个字符组成一组（在字符串中找一个特定pattern的字符）
+        //  如ab*cd*abc*a?b，如找*abc，就是在原字符串中去找abc字符安（可以kmp算法），如果没有 ? 号，相当于由若干个kmp算法组成
+        //  这里为了方便，用了正则去处理，而且不是kmp去处理
+        for(let p = 0; p < startCount - 1; p ++) {
+            i ++;
+
+            // * 后面的格式
+            let subpattern = "";
+            while(pattern[i] !== "*") {
+                subpattern += pattern[i];
+                i ++;
+            }
+
+            //  将subpattern中的问号替换成正则语法（任意字符 => [\\s\\S]）
+            let reg = new RegExp(subpattern.replace(/\?/g, "[\\s\\S]"), "g");
+
+            //  将正则的lastIndex改为之前的lastIndex，这样第一个找完后，后面的可以接着去找
+            reg.lastIndex = lastIndex;
+
+            if(!reg.exec(source)) {
+                return false;
+            }
+
+            lastIndex = reg.lastIndex;
+        }
+
+        //  最后一个 * 号的处理
+        for(let j = 0; j <= source.length - lastIndex && pattern[pattern.length - j] !== "*"; j ++) {
+            if(pattern[pattern.length - j] != source[source.length - j] && pattern[pattern.length - j] != "?") return false;
+        }
+
+        return true;
+        
+    }
+</script>
