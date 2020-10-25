@@ -1,0 +1,97 @@
+<div id="dragable" style="width: 100px; height: 100px; background-color: pink; display: inline-block;"></div>
+<div id="container">
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+</div>
+<script>
+    let dragable = document.getElementById('dragable');
+
+    //  存储拖拽前的位移位置
+    let baseX = 0;
+    let baseY = 0;
+
+    //  要在mousedown里去监听mousemove事件
+    //  需要在document层去监听mousemove，如果在dragable里去监听的话，可能鼠标移动太快的时候会移出dragable,就会导致mousemove监听不到
+    dragable.addEventListener("mousedown", function(event) {
+        //  存储鼠标起始点
+        let startX = event.clientX;
+        let startY = event.clientY;
+
+        let up = () => {
+            baseX = baseX + event.clientX - startX;
+            baseY = baseY + event.clientY - startY;
+            document.removeEventListener("mousemove", move);
+            document.removeEventListener("mouseup", up);
+        }
+        let move = event => {
+            //  dragable.style.transform = `translate(${baseX + event.clientX - startX}px, ${baseY + event.clientY - startY}px)`;
+            let range = getNearest(event.clientX, event.clientY);
+            range.insertNode(dragable);
+        }
+        document.addEventListener('mousemove', move)
+        document.addEventListener('mouseup', up)
+    })
+
+    let ranges = [];
+    let container = document.getElementById('container');
+
+    //  在每个文字的节点处插入range，保存所有range
+    for(let i = 0; i < container.childNodes[0].textContent.length; ++i) {
+        let range = document.createRange();
+        range.setStart(container.childNodes[0], i);
+        range.setEnd(container.childNodes[0], i);
+        
+        ranges.push(range);
+    }
+
+    //  找距离最近的range
+    function getNearest(x, y) {
+        let min = Infinity;
+        let nearest = null;
+
+        //  用CSSOM获range的位置
+        for(let range of ranges) {
+            let rect = range.getBoundingClientRect();
+            let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2;
+            if(distance < min) {
+                nearest = range;
+                min = distance;
+            }
+        }
+
+        return nearest;
+    }
+
+    document.addEventListener("selectstart", event => event.preventDefault());
+
+</script>

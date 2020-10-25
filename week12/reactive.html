@@ -1,0 +1,97 @@
+<input id="r" type="range" min="0" max="255"/>
+<input id="g" type="range" min="0" max="255"/>
+<input id="b" type="range" min="0" max="255"/>
+<div id="color" style="width: 300px; height: 150px;"></div>
+<script>
+let callbacks = new Map();
+
+//  用一个全局的表格保存如“po.a.b”这样嵌套的Proxy
+let reactivites = new Map();
+
+//  一般的proxy使用，我们都是会对对象做某种监听或者改变它的行为，一般都会把proxy包进一个函数里来使用
+let object = {
+    r: 1,
+    g: 2,
+    b: 3
+}
+
+let useReactivites = [];
+
+let po = reactive(object);
+
+effect(() => {
+    document.getElementById('r').value = po.r;
+})
+effect(() => {
+    document.getElementById('g').value = po.g;
+})
+effect(() => {
+    document.getElementById('b').value = po.b;
+})
+
+document.getElementById('r').addEventListener('input', event => po.r = event.target.value);
+document.getElementById('g').addEventListener('input', event => po.g = event.target.value);
+document.getElementById('b').addEventListener('input', event => po.b = event.target.value);
+
+effect(() => {
+    document.getElementById('color').style.backgroundColor = `rgb(${po.r}, ${po.g}, ${po.b})`;
+})
+
+function effect(callback) {
+    // callbacks.push(callback);
+    //  先清空useReactivites
+    useReactivites = [];
+    callback();
+
+    //  将useReactivites里面的值存起来
+    //  useReactivites可能发生多次注册，这里需要做一些防御性操作
+    for (const reactivity of useReactivites) {
+        if(!callbacks.has(reactivity[0])) {
+            //  放2层，第一层对象，第二层属性才对应callback
+            callbacks.set(reactivity[0], new Map());
+        }
+
+        if(!callbacks.get(reactivity[0]).has(reactivity[1])) {
+            callbacks.get(reactivity[0]).set(reactivity[1], []);
+        }
+
+        callbacks.get(reactivity[0]).get(reactivity[1]).push(callback);
+    }
+}
+
+function reactive(object) {
+    if(reactivites.has(object)) {
+        return reactivites.get(object);
+    }
+    let proxy = new Proxy(object, {
+        set(obj, prop, val) {
+            obj[prop] = val;
+            if(callbacks.get(obj)) {
+                if(callbacks.get(obj).get(prop)) {
+                    for (const callback of callbacks.get(obj).get(prop)) {
+                        callback();
+                    }
+                }
+            }
+            return obj[prop];
+        },
+        get(obj, prop, val) {
+            //  访问属性时，将对应属性注册进useReactivites
+            useReactivites.push([obj, prop]);
+
+            //  处理po.a.b的情况，当我们监听到val是个对象的时候
+            if(typeof obj[prop] === 'object') {
+                return reactive(obj[prop]);
+            }
+
+            return obj[prop];
+        }
+    })
+
+    reactivites.set(object, proxy);
+
+    return proxy;
+}
+
+reactive(object);
+</script>
